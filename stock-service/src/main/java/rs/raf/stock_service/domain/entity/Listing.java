@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Data
@@ -20,12 +21,15 @@ public abstract class Listing {
     private Long id;
     private String ticker;
     private String name;
-    
+
     @ManyToOne
     @JoinColumn(name = "exchange_id")
     private Exchange exchange;
-    
+
     private LocalDateTime lastRefresh;
     private BigDecimal price;
     private BigDecimal ask;
+
+    @OneToMany(mappedBy = "listing", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ListingDailyPriceInfo> listingDailyPriceInfos;
 }

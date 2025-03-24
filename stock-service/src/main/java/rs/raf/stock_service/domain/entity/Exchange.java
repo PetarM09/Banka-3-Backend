@@ -4,7 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 
 @Entity
 @Data
@@ -15,7 +17,10 @@ public class Exchange {
     private String mic;
     private String name;
     private String acronym;
-    private String polity;
+    @ManyToOne
+    private Country polity;
     private String currencyCode;
     private Long timeZone;
+
+    private boolean testMode = false;
 }

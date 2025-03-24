@@ -84,14 +84,14 @@ public class LoanRequestControllerTest {
     void testCreateLoanRequest() {
         CreateLoanRequestDto newRequest = new CreateLoanRequestDto(LoanType.REFINANCING, BigDecimal.valueOf(500000), "Education", BigDecimal.valueOf(85000), EmploymentStatus.PERMANENT, 36, 72, "+381641234567", "265000000333333333333", "USD", InterestRateType.FIXED);
 
-        LoanRequestDto savedRequest = new LoanRequestDto(LoanType.REFINANCING, BigDecimal.valueOf(500000), "Education", BigDecimal.valueOf(85000), EmploymentStatus.PERMANENT, 36, 72, "+381641234567", "265000000333333333333", "USD", InterestRateType.FIXED, LocalDateTime.now(), LoanRequestStatus.PENDING);
+        LoanRequestDto savedRequest = new LoanRequestDto(1L, LoanType.REFINANCING, BigDecimal.valueOf(500000), "Education", BigDecimal.valueOf(85000), EmploymentStatus.PERMANENT, 36, 72, "+381641234567", "265000000333333333333", "USD", InterestRateType.FIXED, LocalDateTime.now(), LoanRequestStatus.PENDING);
         when(loanRequestService.saveLoanRequest(newRequest, "Bearer token")).thenReturn(savedRequest);
 
-        ResponseEntity<CreateLoanRequestDto> response = (ResponseEntity<CreateLoanRequestDto>) loanRequestController.createLoanRequest(newRequest, "Bearer token");
+        ResponseEntity<String> response = (ResponseEntity<String>) loanRequestController.createLoanRequest(newRequest, "Bearer token");
 
         assertEquals(201, response.getStatusCodeValue());
         assertNotNull(response.getBody());
-        assertEquals(newRequest.getAmount(), response.getBody().getAmount());
+        assertEquals("Loan request created successfully.", response.getBody());
     }
 
     @Test

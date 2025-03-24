@@ -55,7 +55,7 @@ public class AccountServiceTest {
     @Mock
     private ChangeLimitRequestRepository changeLimitRequestRepository;
 
-    @InjectMocks
+    @Mock
     private JwtTokenUtil jwtTokenUtil;
 
 
@@ -227,6 +227,7 @@ public class AccountServiceTest {
         newBankAccountDto.setCurrency("EUR");
         newBankAccountDto.setIsActive("ACTIVE");
         newBankAccountDto.setAccountOwnerType("PERSONAL");
+        String token = "Bearer token";
 
         ClientDto clientDto = new ClientDto();
         clientDto.setId(1L);
@@ -234,11 +235,13 @@ public class AccountServiceTest {
         Currency currency = new Currency();
         currency.setCode("EUR");
 
+        when(jwtTokenUtil.getUserIdFromAuthHeader(token)).thenReturn(2L);
         when(userClient.getClientById(1L)).thenReturn(clientDto);
         // Use eq() to match the exact "EUR" string.
         when(currencyRepository.findByCode("EUR")).thenReturn(Optional.of(currency));
+        when(accountRepository.save(any())).thenReturn(new PersonalAccount());
 
-        accountService.createNewBankAccount(newBankAccountDto, "Bearer token");
+        accountService.createNewBankAccount(newBankAccountDto, token);
 
         verify(accountRepository, times(1)).save(any(Account.class));
     }
@@ -249,11 +252,13 @@ public class AccountServiceTest {
         newBankAccountDto.setClientId(999L);
         newBankAccountDto.setAccountType("PERSONAL");
         newBankAccountDto.setCurrency("USD");
+        String token = "Bearer token";
 
+        when(jwtTokenUtil.getUserIdFromAuthHeader(token)).thenReturn(2L);
         when(userClient.getClientById(999L)).thenReturn(null);
 
         Exception exception = assertThrows(ClientNotFoundException.class, () -> {
-            accountService.createNewBankAccount(newBankAccountDto, "Bearer token");
+            accountService.createNewBankAccount(newBankAccountDto, token);
         });
         // Adjusted expected message:
         assertEquals("Cannot find client with id: 999", exception.getMessage());
@@ -266,15 +271,17 @@ public class AccountServiceTest {
         newBankAccountDto.setClientId(1L);
         newBankAccountDto.setAccountType("PERSONAL");
         newBankAccountDto.setCurrency("INVALID");
+        String token = "Bearer token";
 
         ClientDto clientDto = new ClientDto();
         clientDto.setId(1L);
 
+        when(jwtTokenUtil.getUserIdFromAuthHeader(token)).thenReturn(2L);
         when(userClient.getClientById(1L)).thenReturn(clientDto);
         lenient().when(currencyRepository.findByCode("INVALID")).thenReturn(Optional.empty());
 
         Exception exception = assertThrows(CurrencyNotFoundException.class, () -> {
-            accountService.createNewBankAccount(newBankAccountDto, "Bearer token");
+            accountService.createNewBankAccount(newBankAccountDto, token);
         });
 
         // Update this to match the actual exception message
@@ -327,21 +334,9 @@ public class AccountServiceTest {
         account.setBalance(BigDecimal.TEN);
         when(accountRepository.findByAccountNumber("1")).thenReturn(Optional.of(account));
 
-        AccountDetailsDto accountDetails = accountService.getAccountDetails(1L, "1");
+        AccountDetailsDto accountDetails = accountService.getAccountDetails("CLIENT", 1L, "1");
         assertNotNull(accountDetails);
         assertEquals(account.getBalance(), accountDetails.getBalance());
-    }
-
-    @Test
-    public void testGetAccountDetails_UserNotAClient() {
-        Request request = Request.create(Request.HttpMethod.GET, "url", new HashMap<>(), null, new RequestTemplate());
-
-        when(userClient.getClientById(5L)).thenThrow(
-                new FeignException.NotFound("User not found", request, null, null));
-
-        UserNotAClientException exception = assertThrows(UserNotAClientException.class, () ->
-                accountService.getAccountDetails(5L, "1"));
-        assertEquals("User sending request is not a client.", exception.getMessage());
     }
 
     @Test
@@ -358,7 +353,7 @@ public class AccountServiceTest {
         when(accountRepository.findByAccountNumber("1")).thenReturn(Optional.of(account));
 
         ClientNotAccountOwnerException exception = assertThrows(ClientNotAccountOwnerException.class, () -> {
-            accountService.getAccountDetails(99L, "1"); // This should trigger the exception
+            accountService.getAccountDetails("CLIENT", 99L, "1"); // This should trigger the exception
         });
 
         assertEquals("Client sending request is not the account owner.", exception.getMessage());

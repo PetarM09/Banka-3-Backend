@@ -1,17 +1,16 @@
 package rs.raf.user_service.domain.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class AuthorizedPersonel {
 
     @Id
@@ -20,7 +19,7 @@ public class AuthorizedPersonel {
 
     private String firstName;
     private String lastName;
-    private Long dateOfBirth;
+    private LocalDate dateOfBirth;
     private String gender;
     private String email;
     private String phoneNumber;

@@ -25,10 +25,6 @@ public class UserClientFallbackFactory implements FallbackFactory<UserClient> {
             }
 
             @Override
-            public void requestCard(RequestCardDto requestCardDto) {
-            }
-
-            @Override
             public void checkToken(CheckTokenDto checkTokenDto) {
             }
 
@@ -69,6 +65,11 @@ public class UserClientFallbackFactory implements FallbackFactory<UserClient> {
 
             @Override
             public LoginResponseDto clientLogin(LoginRequestDto request) {
+                return null;
+            }
+
+            @Override
+            public AuthorizedPersonelDto getAuthorizedPersonnelById(Long id) {
                 return null;
             }
 
